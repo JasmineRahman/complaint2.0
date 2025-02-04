@@ -56,9 +56,14 @@ def classify_complaint_bert(complaint_text):
 @app.post("/classify_complaint/")
 async def classify_complaint(request: ComplaintRequest):
     result = classify_complaint_bert(request.text)
-    cursor.execute("INSERT INTO complaints (text, category, department, severity) VALUES (?, ?, ?, ?)", 
-                   (request.text, result["Category"], result["Department"], result["Severity"]))
+    
+    # Insert classified data into SQLite database
+    cursor.execute("""
+        INSERT INTO complaints (text, category, department, severity)
+        VALUES (?, ?, ?, ?)
+    """, (request.text, result["Category"], result["Department"], result["Severity"]))
     conn.commit()
+    
     return result
 
 @app.get("/get_complaints/")
